@@ -1,6 +1,6 @@
 package com.flywithus.airlinereservations.service;
 
-import com.flywithus.airlinereservations.exception.user.exception.UserHasNoBirthdateException;
+import com.flywithus.airlinereservations.exception.user.exception.UserInvalidBirthdateException;
 import com.flywithus.airlinereservations.exception.user.exception.UserInvalidCountryCodeException;
 import com.flywithus.airlinereservations.exception.user.exception.UserInvalidUsernameException;
 import com.flywithus.airlinereservations.model.User;
@@ -28,7 +28,7 @@ class UserServiceTest {
     private static final String USERNAME_DOES_NOT_EXIST = "Username is null or empty";
     private final static String USERNAME_HAS_WRONG_LENGTH = "Username should be between 3 to 30 characters long";
 
-    private static final String USER_HAS_NO_BIRTHDATE = "This user has no birthdate and thus can't be created";
+    private static final String PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY = "Provided birth date is null or empty";
 
     private static final String COUNTRY_CODE_IS_NULL = "Provided country code is null or empty";
     private static final String COUNTRY_CODE_DOES_NOT_MATCH_ANY_COUNTRY = "Provided country code does not match any country";
@@ -131,10 +131,10 @@ class UserServiceTest {
     @Test
     @DisplayName("Creates a User with no birthdate")
     void createUserWithNoBirthdate() {
-        Exception exception = assertThrows(UserHasNoBirthdateException.class, () -> userService.createUser(userWithNoBirthdate()));
+        Exception exception = assertThrows(UserInvalidBirthdateException.class, () -> userService.createUser(userWithNoBirthdate()));
 
         String actualMessage = exception.getMessage();
-        assertTrue(actualMessage.contains(USER_HAS_NO_BIRTHDATE));
+        assertTrue(actualMessage.contains(PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY));
     }
 
     @Test

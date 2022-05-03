@@ -62,7 +62,7 @@ public class UserService {
 
     @SneakyThrows
     private void assertUserBirthDateIsValid(User user) {
-        if (Objects.isNull(user.getBirthDate())) throw new UserHasNoBirthdateException(user);
+        if (Objects.isNull(user.getBirthDate())) throw new UserInvalidBirthdateException(user, UserInvalidBirthdateException.PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY);
     }
 
     @SneakyThrows

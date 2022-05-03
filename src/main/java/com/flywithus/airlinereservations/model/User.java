@@ -1,8 +1,10 @@
 package com.flywithus.airlinereservations.model;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.flywithus.airlinereservations.utils.IsoDateDeserializer;
 import lombok.*;
 
 import javax.persistence.Column;
@@ -25,13 +27,18 @@ public class User {
 
     @Column(nullable = false, length = 100)
     private String username;
+
     @Column(nullable = false, name = "birth_date")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    @JsonDeserialize(using = IsoDateDeserializer.class)
     private LocalDate birthDate;
+
     @Column(nullable = false, length = 3)
     private String country;
 
     @Column(name = "phone_number")
     private String phoneNumber;
+
     private String gender;
 
     @Override
