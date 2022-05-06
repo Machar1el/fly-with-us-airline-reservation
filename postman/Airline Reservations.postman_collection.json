@@ -1,0 +1,113 @@
+{
+	"info": {
+		"_postman_id": "ca9fe807-aad0-450b-9542-9aa772bad766",
+		"name": "Airline Reservations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get all users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://fwu-airline-reservation.herokuapp.com/api/users",
+					"protocol": "https",
+					"host": [
+						"fwu-airline-reservation",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User ID 1",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://fwu-airline-reservation.herokuapp.com/api/users/1",
+					"protocol": "https",
+					"host": [
+						"fwu-airline-reservation",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User ID 3",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"maxime.rochard\",\r\n  \"birthDate\": \"1995-09-25\",\r\n  \"country\": \"FRA\",\r\n  \"phoneNumber\": \"+33512397812\",\r\n  \"gender\": \"M\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://fwu-airline-reservation.herokuapp.com/api/users/3",
+					"protocol": "https",
+					"host": [
+						"fwu-airline-reservation",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"api",
+						"users",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"sylvain.pinel\",\r\n    \"birthDate\": \"1993-03-20\",\r\n    \"country\": \"FRA\",\r\n    \"phoneNumber\": \"+33512397812\",\r\n    \"gender\": \"M\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://fwu-airline-reservation.herokuapp.com/api/users",
+					"protocol": "https",
+					"host": [
+						"fwu-airline-reservation",
+						"herokuapp",
+						"com"
+					],
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

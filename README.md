@@ -7,6 +7,7 @@
 * A MonitoringAspect, with method calls duration and args/return values logging
 * A Swagger UI
 * Proper code coverage
+* Integration tests
 
 ## Usage
 
@@ -18,23 +19,20 @@ Swagger-UI is available freely here
 
 https://fwu-airline-reservation.herokuapp.com/api/swagger-ui/index.html#/
 
+Use the postman collection in the postman directory as you see fit (however there is no delete option, so every action is permanent until I redeploy the app)
+
 ## Identified short-comings
 
 - No security concerns except for input validation as it probably isn't in the scope of the test
 
 No auth mechanism, every user has access to the same resources
 
-- No Controller/WebLayer tests
+- Not enough WebLayer tests/No Controller tests
 
-I figured Service tests would be enough for the scope of the test
+I figured Service tests coverage and a few weblayer tests would be enough for the scope of the test
 
-- The entity class is also the DTO
+- Probably needs some fine-tuning here and there, in terms of functionnality
 
-In a real-life situation, I would have used a DTO and a mapper.
-This example is simple enough to not absolutely need it for it to be functional
-
-- Service is a concrete class and not an implementation
-
-I figured it would bring no value in the scenario
+- I am not very familiar with weblayer/integration tests and probably got the runner configuration wrong
 
 - The H2 DB is seeded by a data.sql file. Should probably switch to Liquidbase for more serious work.
