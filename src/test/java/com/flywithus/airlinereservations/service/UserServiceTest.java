@@ -23,24 +23,24 @@ import static org.mockito.ArgumentMatchers.any;
 @DisplayName("User Service")
 class UserServiceTest {
 
+    private static final String GEORGES_BRASSENS = "georges.brassens";
+
     private static final String USERNAME_DOES_NOT_EXIST = "Username is null or empty";
     private final static String USERNAME_HAS_WRONG_LENGTH = "Username should be between 3 to 30 characters long";
-
     private static final String PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY = "Provided birth date is null or empty";
-
     private static final String COUNTRY_CODE_IS_NULL = "Provided country code is null or empty";
     private static final String COUNTRY_CODE_DOES_NOT_MATCH_ANY_COUNTRY = "Provided country code does not match any country";
     private static final String COUNTRY_CODE_IS_NOT_ALLOWED_FOR_REGISTRATION = "Provided country code is not allowed for registration";
-
     private static final String MALFORMED_PHONE_NUMBER = "invalid because it doesn't match this pattern : +[0-9]{10,13}";
-
     private static final String DOES_NOT_MATCH_ANY_USERS = "does not match any users";
+    private static final String DOES_NOT_MATCH_GENDER_PATTERN = "does not match pattern [A-Z]";
+    private static final String PROVIDED_USERNAME_ALREADY_EXISTS = "Provided username is already taken";
 
     @Mock
     UserRepository userRepository;
 
     @InjectMocks
-    UserService userService;
+    UserServiceImpl userService;
 
     private static List<User> users;
 
@@ -150,6 +150,28 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Creates a User with an already taken username")
+    void createUserWithAlreadyTakenUsername() {
+        User user = user();
+
+        Mockito.when(userRepository.existsUserByUsername(GEORGES_BRASSENS)).thenReturn(true);
+
+        Exception exception = assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(user));
+
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(PROVIDED_USERNAME_ALREADY_EXISTS));
+    }
+
+    @Test
+    @DisplayName("Creates a User with malformed gender")
+    void createUserWithMalformedGender() {
+        Exception exception = assertThrows(UserInvalidGenderException.class, () -> userService.createUser(userWithMalformedGender()));
+
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(DOES_NOT_MATCH_GENDER_PATTERN));
+    }
+
+    @Test
     @DisplayName("Creates a User with no birthdate")
     void createUserWithNoBirthdate() {
         Exception exception = assertThrows(UserInvalidBirthdateException.class, () -> userService.createUser(userWithNoBirthdate()));
@@ -200,20 +222,20 @@ class UserServiceTest {
 
     private void buildUserList() {
         users = new ArrayList<>();
-        users.add(new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M"));
+        users.add(new User(1, GEORGES_BRASSENS, LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M"));
         users.add(new User(2, "gilbert.montagné", LocalDate.of(1951, 12, 28), "FRA", "+33512346578", "M"));
     }
 
     private User user() {
-        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M");
+        return new User(1, GEORGES_BRASSENS, LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M");
     }
 
     private User userWithNoPhoneNumberOrGender() {
-        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", null, null);
+        return new User(1, GEORGES_BRASSENS, LocalDate.of(1921, 10, 22), "FRA", null, null);
     }
 
     private User userWithMalformedPhoneNumber() {
-        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", "+33556abc118", null);
+        return new User(1, GEORGES_BRASSENS, LocalDate.of(1921, 10, 22), "FRA", "+33556abc118", null);
     }
 
     private User newUser() {
@@ -224,16 +246,20 @@ class UserServiceTest {
         return new User(1, null, LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M");
     }
 
+    private User userWithMalformedGender() {
+        return new User(1, GEORGES_BRASSENS, LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "MRE");
+    }
+
     private User userWithNoBirthdate() {
-        return new User(1, "georges.brassens", null, "FRA", "+33558643158", "M");
+        return new User(1, GEORGES_BRASSENS, null, "FRA", "+33558643158", "M");
     }
 
     private User userWithNoCountry() {
-        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "", "+33558643158", "M");
+        return new User(1, GEORGES_BRASSENS, LocalDate.of(1921, 10, 22), "", "+33558643158", "M");
     }
 
     private User userWithUnknownCountry() {
-        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "GZT", "+33558643158", "M");
+        return new User(1, GEORGES_BRASSENS, LocalDate.of(1921, 10, 22), "GZT", "+33558643158", "M");
     }
 
     private User userWithUnauthorizedCountry() {

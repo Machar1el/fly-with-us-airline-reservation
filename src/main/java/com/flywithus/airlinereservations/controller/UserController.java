@@ -1,8 +1,9 @@
 package com.flywithus.airlinereservations.controller;
 
+import com.flywithus.airlinereservations.dto.UserDTO;
 import com.flywithus.airlinereservations.exception.user.exception.UserNotFoundException;
-import com.flywithus.airlinereservations.model.User;
-import com.flywithus.airlinereservations.service.UserService;
+import com.flywithus.airlinereservations.mapper.UserMapper;
+import com.flywithus.airlinereservations.service.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
@@ -27,64 +28,68 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserService userService;
+    private final UserServiceImpl userService;
+
+    private final UserMapper userMapper;
 
     @Operation(summary = "Return all users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found all users",
                     content = { @Content(mediaType = "application/json",
-                            array = @ArraySchema(schema = @Schema(implementation = User.class))) })
+                            array = @ArraySchema(schema = @Schema(implementation = UserDTO.class))) })
     })
     @GetMapping
-    List<User> getUsers() {
-        return userService.getUsers();
+    ResponseEntity<List<UserDTO>> getUsers() {
+        return new ResponseEntity<>(userMapper.convertToDto(userService.getUsers()), HttpStatus.OK);
     }
 
     @Operation(summary = "Return a user from its ID")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Found the requested user",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)) }),
+                            schema = @Schema(implementation = UserDTO.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid input (ID is malformed or empty)",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class)) })
     })
     @GetMapping("/{id}")
-    User getUserById(@Parameter(description = "ID of the requested user. Cannot be empty.",
+    ResponseEntity<UserDTO> getUserById(@Parameter(description = "ID of the requested user. Cannot be empty.",
             required = true) @PathVariable @NotBlank long id) throws UserNotFoundException {
-        return userService.getUserById(id);
+        return new ResponseEntity<>(userMapper.convertToDto(userService.getUserById(id)), HttpStatus.OK);
     }
 
     @Operation(summary = "Register a user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully registered the user",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)) }),
+                            schema = @Schema(implementation = UserDTO.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid input (some inputs are malformed or empty)",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class)) })
     })
     @PostMapping
-    User registerUser(@RequestBody @NotNull @Valid User user) {
-        return userService.createUser(user);
+    UserDTO registerUser(@RequestBody @NotNull @Valid UserDTO user) {
+        return userMapper.convertToDto(userService.createUser(userMapper.convertToEntity(user)));
     }
 
     @Operation(summary = "Updates a specific user")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Updated the specified user",
                     content = { @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = User.class)) }),
+                            schema = @Schema(implementation = UserDTO.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid input (some inputs are malformed or empty)",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class)) })
     })
     @PutMapping("/{id}")
-    ResponseEntity<User> putUser(@Parameter(description = "ID of the user you'd like to update. Cannot be empty.",
+    ResponseEntity<UserDTO> updateUser(@Parameter(description = "ID of the user you'd like to update. Cannot be empty.",
             required = true) @PathVariable @NotBlank long id,
-                                 @RequestBody @NotNull @Valid User user) {
-        return (!userService.existsById(id))
-                ? new ResponseEntity<>(userService.createUser(user),
-                HttpStatus.CREATED)
-                : new ResponseEntity<>(userService.updateUser(user), HttpStatus.OK);
+                                 @RequestBody @NotNull @Valid UserDTO user) {
+
+        user.setId(id);
+
+        UserDTO updatedUser = userMapper.convertToDto(userService.updateUser(userMapper.convertToEntity(user)));
+
+        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
     }
 }
