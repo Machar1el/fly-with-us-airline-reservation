@@ -28,6 +28,7 @@ class UserServiceTest {
     private static final String USERNAME_DOES_NOT_EXIST = "Username is null or empty";
     private final static String USERNAME_HAS_WRONG_LENGTH = "Username should be between 3 to 30 characters long";
     private static final String PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY = "Provided birth date is null or empty";
+    private static final String PROVIDED_BIRTHDATE_IS_UNDERAGE = "date is under the age of 18 years old";
     private static final String COUNTRY_CODE_IS_NULL = "Provided country code is null or empty";
     private static final String COUNTRY_CODE_DOES_NOT_MATCH_ANY_COUNTRY = "Provided country code does not match any country";
     private static final String COUNTRY_CODE_IS_NOT_ALLOWED_FOR_REGISTRATION = "Provided country code is not allowed for registration";
@@ -181,6 +182,15 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("Creates a User with underage birthdate")
+    void createUnderageUser() {
+        Exception exception = assertThrows(UserInvalidBirthdateException.class, () -> userService.createUser(userWithUnderageBirthdate()));
+
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(PROVIDED_BIRTHDATE_IS_UNDERAGE));
+    }
+
+    @Test
     @DisplayName("Creates a User with no country")
     void createUserWithNoCountry() {
         Exception exception = assertThrows(UserInvalidCountryCodeException.class, () -> userService.createUser(userWithNoCountry()));
@@ -252,6 +262,10 @@ class UserServiceTest {
 
     private User userWithNoBirthdate() {
         return new User(1, GEORGES_BRASSENS, null, "FRA", "+33558643158", "M");
+    }
+
+    private User userWithUnderageBirthdate() {
+        return new User(1, GEORGES_BRASSENS, LocalDate.now().minusYears(11), "FRA", "+33558643158", "M");
     }
 
     private User userWithNoCountry() {

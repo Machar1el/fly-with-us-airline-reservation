@@ -10,6 +10,7 @@ import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -19,6 +20,8 @@ import java.util.Objects;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+
+    private static final int ADULT_AGE = 18;
 
     private static final int USERNAME_TOO_SHORT_THRESHOLD = 3;
     private static final int USERNAME_TOO_LONG_THRESHOLD = 30;
@@ -99,7 +102,11 @@ public class UserServiceImpl implements UserService {
 
     @SneakyThrows
     private void assertUserBirthDateIsValid(User user) {
-        if (Objects.isNull(user.getBirthDate())) throw new UserInvalidBirthdateException(user, UserInvalidBirthdateException.PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY);
+        if (Objects.isNull(user.getBirthDate())) {
+            throw new UserInvalidBirthdateException(user, UserInvalidBirthdateException.PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY);
+        } else {
+            if (user.getBirthDate().until(LocalDate.now()).getYears() < ADULT_AGE) throw new UserInvalidBirthdateException(user, UserInvalidBirthdateException.PROVIDED_BIRTHDATE_IS_UNDERAGE);
+        }
     }
 
     @SneakyThrows
