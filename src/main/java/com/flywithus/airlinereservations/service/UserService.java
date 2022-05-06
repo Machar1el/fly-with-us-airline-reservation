@@ -3,9 +3,11 @@ package com.flywithus.airlinereservations.service;
 import com.flywithus.airlinereservations.aspect.monitoring.Monitor;
 import com.flywithus.airlinereservations.exception.user.exception.UserNotFoundException;
 import com.flywithus.airlinereservations.model.User;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public interface UserService {
     
     @Monitor(threshold = 25)

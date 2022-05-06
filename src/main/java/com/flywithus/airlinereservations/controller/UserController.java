@@ -71,8 +71,8 @@ public class UserController {
                             schema = @Schema(implementation = String.class)) })
     })
     @PostMapping
-    UserDTO registerUser(@RequestBody @NotNull @Valid UserDTO user) {
-        return userMapper.convertToDto(userService.createUser(userMapper.convertToEntity(user)));
+    ResponseEntity<UserDTO> registerUser(@RequestBody @NotNull @Valid UserDTO user) {
+        return new ResponseEntity<>(userMapper.convertToDto(userService.createUser(userMapper.convertToEntity(user))), HttpStatus.CREATED);
     }
 
     @Operation(summary = "Updates a specific user")
@@ -96,6 +96,6 @@ public class UserController {
 
         UserDTO updatedUser = userMapper.convertToDto(userService.updateUser(userMapper.convertToEntity(user)));
 
-        return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+        return new ResponseEntity<>(updatedUser, HttpStatus.NO_CONTENT);
     }
 }
