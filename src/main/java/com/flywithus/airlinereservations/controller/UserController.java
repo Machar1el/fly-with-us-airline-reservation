@@ -50,6 +50,9 @@ public class UserController {
                             schema = @Schema(implementation = UserDTO.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid input (ID is malformed or empty)",
                     content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class)) }),
+            @ApiResponse(responseCode = "404", description = "Provided ID doesn't match any user",
+                    content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class)) })
     })
     @GetMapping("/{id}")
@@ -78,6 +81,9 @@ public class UserController {
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = UserDTO.class)) }),
             @ApiResponse(responseCode = "400", description = "Invalid input (some inputs are malformed or empty)",
+                    content = { @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = String.class)) }),
+            @ApiResponse(responseCode = "404", description = "Provided ID doesn't match any user",
                     content = { @Content(mediaType = "application/json",
                             schema = @Schema(implementation = String.class)) })
     })
