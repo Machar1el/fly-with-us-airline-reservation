@@ -1,9 +1,6 @@
 package com.flywithus.airlinereservations.service;
 
-import com.flywithus.airlinereservations.exception.user.exception.UserInvalidBirthdateException;
-import com.flywithus.airlinereservations.exception.user.exception.UserInvalidCountryCodeException;
-import com.flywithus.airlinereservations.exception.user.exception.UserInvalidPhoneNumberException;
-import com.flywithus.airlinereservations.exception.user.exception.UserInvalidUsernameException;
+import com.flywithus.airlinereservations.exception.user.exception.*;
 import com.flywithus.airlinereservations.model.User;
 import com.flywithus.airlinereservations.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -37,6 +34,8 @@ class UserServiceTest {
 
     private static final String MALFORMED_PHONE_NUMBER = "invalid because it doesn't match this pattern : +[0-9]{10,13}";
 
+    private static final String DOES_NOT_MATCH_ANY_USERS = "does not match any users";
+
     @Mock
     UserRepository userRepository;
 
@@ -52,7 +51,7 @@ class UserServiceTest {
 
         Mockito.when(userRepository.findAll()).thenReturn(users);
 
-        assertTrue(userService.getUsers().iterator().hasNext());
+        assertTrue(userService.getUsers().containsAll(users));
     }
 
     @Test
@@ -67,15 +66,25 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Retrieves a single User")
-    void getUserById() {
+    void getUserById() throws UserNotFoundException {
         buildUserList();
 
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(users.get(1)));
 
-        Optional<User> user = userService.getUserById(1);
+        User user = userService.getUserById(1);
 
-        assertTrue(user.isPresent());
-        assertEquals(user.get(), users.get(1));
+        assertEquals(user, users.get(1));
+    }
+
+    @Test
+    @DisplayName("Fails to retrieve an unknown User")
+    void getUnknownUserById() {
+        buildUserList();
+
+        Exception exception = assertThrows(UserNotFoundException.class, () -> userService.getUserById(5));
+
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(DOES_NOT_MATCH_ANY_USERS));
     }
 
     @Test
@@ -178,10 +187,10 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Updates a User")
-    void updateUser() {
+    void updateUser() throws UserNotFoundException {
         User oldUser = user();
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(oldUser));
-        User user = userService.getUserById(1).orElseThrow();
+        User user = userService.getUserById(1);
         assertEquals(oldUser, user);
 
         User newUser = newUser();

@@ -5,16 +5,16 @@ import com.flywithus.airlinereservations.exception.user.exception.UserInvalidPho
 import com.flywithus.airlinereservations.exception.user.exception.*;
 import com.flywithus.airlinereservations.model.User;
 import com.flywithus.airlinereservations.repository.UserRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Optional;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
@@ -26,7 +26,7 @@ public class UserService {
     private static final String PHONE_NUMBER_REGEX_PATTERN = "^\\+[0-9]{10,13}";
 
     @Monitor(threshold = 25)
-    public Iterable<User> getUsers() {
+    public List<User> getUsers() {
         return userRepository.findAll();
     }
 
@@ -35,8 +35,8 @@ public class UserService {
     }
 
     @Monitor(threshold = 2)
-    public Optional<User> getUserById(long id) {
-        return userRepository.findById(id);
+    public User getUserById(long id) throws UserNotFoundException {
+        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(id));
     }
 
     @Monitor(threshold = 8)

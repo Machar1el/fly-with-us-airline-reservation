@@ -1,5 +1,6 @@
 package com.flywithus.airlinereservations.controller;
 
+import com.flywithus.airlinereservations.exception.user.exception.UserNotFoundException;
 import com.flywithus.airlinereservations.model.User;
 import com.flywithus.airlinereservations.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.Optional;
+import java.util.List;
 
 @AllArgsConstructor
 @RestController
@@ -35,7 +36,7 @@ public class UserController {
                             array = @ArraySchema(schema = @Schema(implementation = User.class))) })
     })
     @GetMapping
-    Iterable<User> getUsers() {
+    List<User> getUsers() {
         return userService.getUsers();
     }
 
@@ -49,8 +50,8 @@ public class UserController {
                             schema = @Schema(implementation = String.class)) })
     })
     @GetMapping("/{id}")
-    Optional<User> getUserById(@Parameter(description = "ID of the requested user. Cannot be empty.",
-            required = true) @PathVariable @NotBlank long id) {
+    User getUserById(@Parameter(description = "ID of the requested user. Cannot be empty.",
+            required = true) @PathVariable @NotBlank long id) throws UserNotFoundException {
         return userService.getUserById(id);
     }
 
@@ -64,7 +65,7 @@ public class UserController {
                             schema = @Schema(implementation = String.class)) })
     })
     @PostMapping
-    User registerUser(@RequestBody @NotNull User user) {
+    User registerUser(@RequestBody @NotNull @Valid User user) {
         return userService.createUser(user);
     }
 
