@@ -1,6 +1,7 @@
 package com.flywithus.airlinereservations.service;
 
 import com.flywithus.airlinereservations.aspect.monitoring.Monitor;
+import com.flywithus.airlinereservations.exception.user.exception.UserInvalidPhoneNumberException;
 import com.flywithus.airlinereservations.exception.user.exception.*;
 import com.flywithus.airlinereservations.model.User;
 import com.flywithus.airlinereservations.repository.UserRepository;
@@ -21,6 +22,8 @@ public class UserService {
 
     private static final int USERNAME_TOO_SHORT_THRESHOLD = 3;
     private static final int USERNAME_TOO_LONG_THRESHOLD = 30;
+
+    private static final String PHONE_NUMBER_REGEX_PATTERN = "^\\+[0-9]{10,13}";
 
     @Monitor(threshold = 25)
     public Iterable<User> getUsers() {
@@ -51,6 +54,14 @@ public class UserService {
         assertUsernameIsValid(user);
         assertUserBirthDateIsValid(user);
         assertUserCountryIsValid(user);
+        assertPhoneNumberIsValid(user);
+    }
+
+    @SneakyThrows
+    private void assertPhoneNumberIsValid(User user) {
+        if (Objects.nonNull(user.getPhoneNumber())) {
+            if (!user.getPhoneNumber().matches(PHONE_NUMBER_REGEX_PATTERN)) throw new UserInvalidPhoneNumberException(user);
+        }
     }
 
     @SneakyThrows

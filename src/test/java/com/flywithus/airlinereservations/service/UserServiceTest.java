@@ -2,6 +2,7 @@ package com.flywithus.airlinereservations.service;
 
 import com.flywithus.airlinereservations.exception.user.exception.UserInvalidBirthdateException;
 import com.flywithus.airlinereservations.exception.user.exception.UserInvalidCountryCodeException;
+import com.flywithus.airlinereservations.exception.user.exception.UserInvalidPhoneNumberException;
 import com.flywithus.airlinereservations.exception.user.exception.UserInvalidUsernameException;
 import com.flywithus.airlinereservations.model.User;
 import com.flywithus.airlinereservations.repository.UserRepository;
@@ -33,6 +34,8 @@ class UserServiceTest {
     private static final String COUNTRY_CODE_IS_NULL = "Provided country code is null or empty";
     private static final String COUNTRY_CODE_DOES_NOT_MATCH_ANY_COUNTRY = "Provided country code does not match any country";
     private static final String COUNTRY_CODE_IS_NOT_ALLOWED_FOR_REGISTRATION = "Provided country code is not allowed for registration";
+
+    private static final String MALFORMED_PHONE_NUMBER = "invalid because it doesn't match this pattern : +[0-9]{10,13}";
 
     @Mock
     UserRepository userRepository;
@@ -93,6 +96,15 @@ class UserServiceTest {
         Mockito.when(userRepository.save(any())).thenReturn(user);
 
         assertEquals(user, userService.createUser(user));
+    }
+
+    @Test
+    @DisplayName("Creates a User with malformed phone number")
+    void createUserWithMalformedPhoneNumber() {
+        Exception exception = assertThrows(UserInvalidPhoneNumberException.class, () -> userService.createUser(userWithMalformedPhoneNumber()));
+
+        String actualMessage = exception.getMessage();
+        assertTrue(actualMessage.contains(MALFORMED_PHONE_NUMBER));
     }
 
     @Test
@@ -171,7 +183,7 @@ class UserServiceTest {
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(oldUser));
         User user = userService.getUserById(1).orElseThrow();
         assertEquals(oldUser, user);
-        
+
         User newUser = newUser();
         Mockito.when(userRepository.save(any())).thenReturn(newUser);
         assertNotEquals(oldUser, userService.updateUser(newUser));
@@ -179,24 +191,28 @@ class UserServiceTest {
 
     private void buildUserList() {
         users = new ArrayList<>();
-        users.add(new User(1, "georges.brassens", LocalDate.of(1921, 10,22), "FRA", "+33558643158", "M"));
-        users.add(new User(2, "gilbert.montagné", LocalDate.of(1951,12,28), "FRA", "+33512346578", "M"));
+        users.add(new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M"));
+        users.add(new User(2, "gilbert.montagné", LocalDate.of(1951, 12, 28), "FRA", "+33512346578", "M"));
     }
 
     private User user() {
-        return new User(1, "georges.brassens", LocalDate.of(1921, 10,22), "FRA", "+33558643158", "M");
+        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M");
     }
 
     private User userWithNoPhoneNumberOrGender() {
-        return new User(1, "georges.brassens", LocalDate.of(1921, 10,22), "FRA", null, null);
+        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", null, null);
+    }
+
+    private User userWithMalformedPhoneNumber() {
+        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", "+33556abc118", null);
     }
 
     private User newUser() {
-        return new User(1, "maxime.leforestier", LocalDate.of(1949, 2,10), "FRA", "+33556743118", "M");
+        return new User(1, "maxime.leforestier", LocalDate.of(1949, 2, 10), "FRA", "+33556743118", "M");
     }
 
     private User userWithNoUsername() {
-        return new User(1, null, LocalDate.of(1921, 10,22), "FRA", "+33558643158", "M");
+        return new User(1, null, LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M");
     }
 
     private User userWithNoBirthdate() {
@@ -204,14 +220,14 @@ class UserServiceTest {
     }
 
     private User userWithNoCountry() {
-        return new User(1, "georges.brassens", LocalDate.of(1921, 10,22), "", "+33558643158", "M");
+        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "", "+33558643158", "M");
     }
 
     private User userWithUnknownCountry() {
-        return new User(1, "georges.brassens", LocalDate.of(1921, 10,22), "GZT", "+33558643158", "M");
+        return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "GZT", "+33558643158", "M");
     }
 
     private User userWithUnauthorizedCountry() {
-        return new User(1, "ron.weasley", LocalDate.of(1989, 3,18), "GBR", "+33558643158", "M");
+        return new User(1, "ron.weasley", LocalDate.of(1989, 3, 18), "GBR", "+33558643158", "M");
     }
 }
