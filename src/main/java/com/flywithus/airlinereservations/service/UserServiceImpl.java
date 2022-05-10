@@ -1,8 +1,8 @@
 package com.flywithus.airlinereservations.service;
 
 import com.flywithus.airlinereservations.aspect.monitoring.Monitor;
-import com.flywithus.airlinereservations.exception.user.exception.UserInvalidPhoneNumberException;
-import com.flywithus.airlinereservations.exception.user.exception.*;
+import com.flywithus.airlinereservations.exception.user.exception.UserNotFoundException;
+import com.flywithus.airlinereservations.exception.user.exception.UserServiceException;
 import com.flywithus.airlinereservations.model.User;
 import com.flywithus.airlinereservations.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +26,8 @@ public class UserServiceImpl implements UserService {
     private static final int USERNAME_TOO_SHORT_THRESHOLD = 3;
     private static final int USERNAME_TOO_LONG_THRESHOLD = 30;
 
-    private static final String PHONE_NUMBER_REGEX_PATTERN = "^\\+[0-9]{10,13}";
-    private static final String GENDER_REGEX_PATTERN = "^[A-Z]";
+    public static final String PHONE_NUMBER_REGEX_PATTERN = "^\\+[0-9]{10,13}";
+    public static final String GENDER_REGEX_PATTERN = "^[A-Z]";
 
     @Override
     @Monitor(threshold = 25)
@@ -48,19 +48,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Monitor(threshold = 8)
-    public User createUser(User user) {
+    public User createUser(User user) throws UserServiceException {
         assertUserIsValid(user);
         return userRepository.save(user);
     }
 
     @Override
-    public User updateUser(User user) {
+    public User updateUser(User user) throws UserServiceException {
         assertUserExists(user);
         assertUserIsValid(user);
         return userRepository.save(user);
     }
 
-    private void assertUserIsValid(User user) {
+    private void assertUserIsValid(User user) throws UserServiceException {
         assertUsernameIsValid(user);
         assertUsernameIsFree(user);
         assertUserBirthDateIsValid(user);
@@ -69,63 +69,61 @@ public class UserServiceImpl implements UserService {
         assertUserGenderIsValid(user);
     }
 
-    @SneakyThrows
-    private void assertUsernameIsFree(User user) {
-        if (userRepository.existsUserByUsername(user.getUsername())) throw new UserAlreadyExistsException(user);
+    private void assertUsernameIsFree(User user) throws UserServiceException {
+        if (userRepository.existsUserByUsername(user.getUsername()))
+            throw new UserServiceException(user, UserServiceException.PROVIDED_USERNAME_ALREADY_EXISTS);
     }
 
-    @SneakyThrows
-    private void assertUserExists(User user) {
+    private void assertUserExists(User user) throws UserNotFoundException {
         if (existsById(user.getId())) throw new UserNotFoundException(user.getId());
     }
 
-    @SneakyThrows
-    private void assertPhoneNumberIsValid(User user) {
-        if (Objects.nonNull(user.getPhoneNumber())) {
-            if (!user.getPhoneNumber().matches(PHONE_NUMBER_REGEX_PATTERN)) throw new UserInvalidPhoneNumberException(user);
-        }
+    private void assertPhoneNumberIsValid(User user) throws UserServiceException {
+        if (Objects.nonNull(user.getPhoneNumber()) && !user.getPhoneNumber().matches(PHONE_NUMBER_REGEX_PATTERN))
+            throw new UserServiceException(user, UserServiceException.PROVIDED_PHONE_NUMBER_IS_INVALID_REASON);
     }
 
-    @SneakyThrows
-    private void assertUserGenderIsValid(User user) {
-        if (Objects.nonNull(user.getGender())) {
-            if (!user.getGender().matches(GENDER_REGEX_PATTERN)) throw new UserInvalidGenderException(user);
-        }
+    private void assertUserGenderIsValid(User user) throws UserServiceException {
+        if (Objects.nonNull(user.getGender()) && !user.getGender().matches(GENDER_REGEX_PATTERN))
+            throw new UserServiceException(user, UserServiceException.PROVIDED_GENDER_DOES_NOT_MATCH_PATTERN);
     }
 
-    @SneakyThrows
-    private void assertUsernameIsValid(User user) {
-        if (!StringUtils.hasLength(user.getUsername())) throw new UserInvalidUsernameException(user, UserInvalidUsernameException.USERNAME_DOES_NOT_EXIST);
-        if (user.getUsername().length() < USERNAME_TOO_SHORT_THRESHOLD) throw new UserInvalidUsernameException(user, UserInvalidUsernameException.USERNAME_HAS_WRONG_LENGTH);
-        if (user.getUsername().length() > USERNAME_TOO_LONG_THRESHOLD) throw new UserInvalidUsernameException(user, UserInvalidUsernameException.USERNAME_HAS_WRONG_LENGTH);
+    private void assertUsernameIsValid(User user) throws UserServiceException {
+        if (!StringUtils.hasLength(user.getUsername()))
+            throw new UserServiceException(user, UserServiceException.USERNAME_DOES_NOT_EXIST);
+        if (user.getUsername().length() < USERNAME_TOO_SHORT_THRESHOLD)
+            throw new UserServiceException(user, UserServiceException.USERNAME_HAS_WRONG_LENGTH);
+        if (user.getUsername().length() > USERNAME_TOO_LONG_THRESHOLD)
+            throw new UserServiceException(user, UserServiceException.USERNAME_HAS_WRONG_LENGTH);
     }
 
-    @SneakyThrows
-    private void assertUserBirthDateIsValid(User user) {
+    private void assertUserBirthDateIsValid(User user) throws UserServiceException {
         if (Objects.isNull(user.getBirthDate())) {
-            throw new UserInvalidBirthdateException(user, UserInvalidBirthdateException.PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY);
+            throw new UserServiceException(user, UserServiceException.PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY);
         } else {
-            if (user.getBirthDate().until(LocalDate.now()).getYears() < ADULT_AGE) throw new UserInvalidBirthdateException(user, UserInvalidBirthdateException.PROVIDED_BIRTHDATE_IS_UNDERAGE);
+            if (user.getBirthDate().until(LocalDate.now()).getYears() < ADULT_AGE)
+                throw new UserServiceException(user, UserServiceException.PROVIDED_BIRTHDATE_IS_UNDERAGE);
         }
     }
 
-    @SneakyThrows
-    private void assertUserCountryIsValid(User user) {
+    private void assertUserCountryIsValid(User user) throws UserServiceException {
         if (StringUtils.hasLength(user.getCountry())) {
             assertUserCountryExists(user);
             assertUserCountryIsAuthorized(user);
         } else {
-            throw new UserInvalidCountryCodeException(user, UserInvalidCountryCodeException.COUNTRY_CODE_IS_NULL);
+            throw new UserServiceException(user, UserServiceException.COUNTRY_CODE_IS_NULL);
         }
     }
 
     @SneakyThrows
     private void assertUserCountryExists(User user) {
-        if (!Locale.getISOCountries(Locale.IsoCountryCode.PART1_ALPHA3).contains(user.getCountry())) throw new UserInvalidCountryCodeException(user, UserInvalidCountryCodeException.COUNTRY_CODE_DOES_NOT_MATCH_ANY_COUNTRY);
+        if (!Locale.getISOCountries(Locale.IsoCountryCode.PART1_ALPHA3).contains(user.getCountry()))
+            throw new UserServiceException(user, UserServiceException.COUNTRY_CODE_DOES_NOT_MATCH_ANY_COUNTRY);
     }
 
     @SneakyThrows
     private void assertUserCountryIsAuthorized(User user) {
-        if (!Objects.equals(user.getCountry(), "FRA")) throw new UserInvalidCountryCodeException(user, UserInvalidCountryCodeException.COUNTRY_CODE_IS_NOT_ALLOWED_FOR_REGISTRATION);
+        if (!Objects.equals(user.getCountry(), "FRA"))
+            throw new UserServiceException(user, UserServiceException.COUNTRY_CODE_IS_NOT_ALLOWED_FOR_REGISTRATION);
     }
 }

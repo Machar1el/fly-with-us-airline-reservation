@@ -1,10 +1,10 @@
 package com.flywithus.airlinereservations.utils;
 
-import lombok.SneakyThrows;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.flywithus.airlinereservations.exception.user.exception.UserInvalidBirthdateException;
+import com.flywithus.airlinereservations.exception.user.exception.UserServiceException;
+import lombok.SneakyThrows;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -20,7 +20,7 @@ public class IsoDateDeserializer extends JsonDeserializer<LocalDate> {
         try {
             return LocalDate.parse(jsonParser.getText(), DateTimeFormatter.ISO_DATE);
         } catch (DateTimeParseException e) {
-            throw new UserInvalidBirthdateException(null, UserInvalidBirthdateException.PROVIDED_DATE_MUST_MATCH_PATTERN_YYYY_MM_DD);
+            throw new UserServiceException(null, UserServiceException.PROVIDED_DATE_MUST_MATCH_PATTERN_YYYY_MM_DD);
         }
     }
 }

@@ -67,7 +67,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Retrieves a single User")
-    void getUserById() throws UserNotFoundException {
+    void getUserById() throws UserServiceException {
         buildUserList();
 
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(users.get(1)));
@@ -90,7 +90,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Creates a User")
-    void createUser() {
+    void createUser() throws UserServiceException {
         User user = user();
 
         Mockito.when(userRepository.save(any())).thenReturn(user);
@@ -100,7 +100,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Creates a User with no phone number or gender")
-    void createUserWithNoPhoneNumberOrGender() {
+    void createUserWithNoPhoneNumberOrGender() throws UserServiceException {
         User user = userWithNoPhoneNumberOrGender();
 
         Mockito.when(userRepository.save(any())).thenReturn(user);
@@ -111,7 +111,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Creates a User with malformed phone number")
     void createUserWithMalformedPhoneNumber() {
-        Exception exception = assertThrows(UserInvalidPhoneNumberException.class, () -> userService.createUser(userWithMalformedPhoneNumber()));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(userWithMalformedPhoneNumber()));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(MALFORMED_PHONE_NUMBER));
@@ -120,7 +120,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Creates a User with no username")
     void createUserWithNoUsername() {
-        Exception exception = assertThrows(UserInvalidUsernameException.class, () -> userService.createUser(userWithNoUsername()));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(userWithNoUsername()));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(USERNAME_DOES_NOT_EXIST));
@@ -132,7 +132,7 @@ class UserServiceTest {
         User user = user();
         user.setUsername("Ho");
 
-        Exception exception = assertThrows(UserInvalidUsernameException.class, () -> userService.createUser(user));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(user));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(USERNAME_HAS_WRONG_LENGTH));
@@ -144,7 +144,7 @@ class UserServiceTest {
         User user = user();
         user.setUsername("pierre-jean.capot.paganel.belmon.de.cuissac");
 
-        Exception exception = assertThrows(UserInvalidUsernameException.class, () -> userService.createUser(user));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(user));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(USERNAME_HAS_WRONG_LENGTH));
@@ -157,7 +157,7 @@ class UserServiceTest {
 
         Mockito.when(userRepository.existsUserByUsername(GEORGES_BRASSENS)).thenReturn(true);
 
-        Exception exception = assertThrows(UserAlreadyExistsException.class, () -> userService.createUser(user));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(user));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(PROVIDED_USERNAME_ALREADY_EXISTS));
@@ -166,7 +166,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Creates a User with malformed gender")
     void createUserWithMalformedGender() {
-        Exception exception = assertThrows(UserInvalidGenderException.class, () -> userService.createUser(userWithMalformedGender()));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(userWithMalformedGender()));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(DOES_NOT_MATCH_GENDER_PATTERN));
@@ -175,7 +175,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Creates a User with no birthdate")
     void createUserWithNoBirthdate() {
-        Exception exception = assertThrows(UserInvalidBirthdateException.class, () -> userService.createUser(userWithNoBirthdate()));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(userWithNoBirthdate()));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(PROVIDED_BIRTHDATE_IS_NULL_OR_EMPTY));
@@ -184,7 +184,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Creates a User with underage birthdate")
     void createUnderageUser() {
-        Exception exception = assertThrows(UserInvalidBirthdateException.class, () -> userService.createUser(userWithUnderageBirthdate()));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(userWithUnderageBirthdate()));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(PROVIDED_BIRTHDATE_IS_UNDERAGE));
@@ -193,7 +193,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Creates a User with no country")
     void createUserWithNoCountry() {
-        Exception exception = assertThrows(UserInvalidCountryCodeException.class, () -> userService.createUser(userWithNoCountry()));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(userWithNoCountry()));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(COUNTRY_CODE_IS_NULL));
@@ -202,7 +202,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Creates a User with a country code that doesn't match any country")
     void createUserWithUnknownCountry() {
-        Exception exception = assertThrows(UserInvalidCountryCodeException.class, () -> userService.createUser(userWithUnknownCountry()));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(userWithUnknownCountry()));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(COUNTRY_CODE_DOES_NOT_MATCH_ANY_COUNTRY));
@@ -211,7 +211,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Creates a User with an unauthorized nationality")
     void createUserWithUnauthorizedNationality() {
-        Exception exception = assertThrows(UserInvalidCountryCodeException.class, () -> userService.createUser(userWithUnauthorizedCountry()));
+        Exception exception = assertThrows(UserServiceException.class, () -> userService.createUser(userWithUnauthorizedCountry()));
 
         String actualMessage = exception.getMessage();
         assertTrue(actualMessage.contains(COUNTRY_CODE_IS_NOT_ALLOWED_FOR_REGISTRATION));
@@ -219,7 +219,7 @@ class UserServiceTest {
 
     @Test
     @DisplayName("Updates a User")
-    void updateUser() throws UserNotFoundException {
+    void updateUser() throws UserServiceException {
         User oldUser = user();
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(oldUser));
         User user = userService.getUserById(1);

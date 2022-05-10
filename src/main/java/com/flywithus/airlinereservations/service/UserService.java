@@ -2,6 +2,7 @@ package com.flywithus.airlinereservations.service;
 
 import com.flywithus.airlinereservations.aspect.monitoring.Monitor;
 import com.flywithus.airlinereservations.exception.user.exception.UserNotFoundException;
+import com.flywithus.airlinereservations.exception.user.exception.UserServiceException;
 import com.flywithus.airlinereservations.model.User;
 import org.springframework.stereotype.Service;
 
@@ -9,7 +10,7 @@ import java.util.List;
 
 @Service
 public interface UserService {
-    
+
     @Monitor(threshold = 25)
     List<User> getUsers();
 
@@ -19,7 +20,7 @@ public interface UserService {
     User getUserById(long id) throws UserNotFoundException;
 
     @Monitor(threshold = 8)
-    User createUser(User user);
+    User createUser(User user) throws UserServiceException;
 
-    User updateUser(User user);
+    User updateUser(User user) throws UserServiceException;
 }

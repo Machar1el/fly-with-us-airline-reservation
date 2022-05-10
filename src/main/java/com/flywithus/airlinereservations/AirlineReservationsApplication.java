@@ -13,7 +13,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 )
 public class AirlineReservationsApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(AirlineReservationsApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(AirlineReservationsApplication.class, args);
+    }
 }

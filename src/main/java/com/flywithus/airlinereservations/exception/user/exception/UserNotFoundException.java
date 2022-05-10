@@ -1,10 +1,8 @@
 package com.flywithus.airlinereservations.exception.user.exception;
 
-public class UserNotFoundException extends UserException {
-
-    private static final String NO_USER_FOUND_FOR_ID = "Provided ID (%d) does not match any users";
+public class UserNotFoundException extends UserServiceException {
 
     public UserNotFoundException(long id) {
-        super(null, String.format(NO_USER_FOUND_FOR_ID, id));
+        super(null, String.format(UserServiceException.NO_USER_FOUND_FOR_ID, id));
     }
 }

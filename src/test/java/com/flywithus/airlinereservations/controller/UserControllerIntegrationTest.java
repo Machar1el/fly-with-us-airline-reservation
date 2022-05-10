@@ -1,6 +1,7 @@
 package com.flywithus.airlinereservations.controller;
 
 import com.flywithus.airlinereservations.AirlineReservationsApplication;
+import com.flywithus.airlinereservations.dto.ErrorDTO;
 import com.flywithus.airlinereservations.dto.UserDTO;
 import com.flywithus.airlinereservations.model.User;
 import com.flywithus.airlinereservations.repository.UserRepository;
@@ -14,6 +15,7 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,7 +37,7 @@ class UserControllerIntegrationTest {
     private UserRepository userRepository;
 
     @Test
-    @DisplayName("Retrieves a single User")
+    @DisplayName("Retrieve a single User")
     void getUserById() {
         User mockUser = user();
         Mockito.when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
@@ -54,11 +56,25 @@ class UserControllerIntegrationTest {
     @Test
     @DisplayName("Failure to retrieve an unknown User")
     void getUnknownUserById() {
-        ResponseEntity<String> response = this.restTemplate.getForEntity(url("/users/2"), String.class);
+        ResponseEntity<ErrorDTO> response = this.restTemplate.getForEntity(url("/users/2"), ErrorDTO.class);
 
-        assertSame(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().contains("does not match any users"));
+        assertEquals(HttpStatus.NOT_FOUND.value(), response.getBody().getHttpStatus());
+        assertTrue(response.getBody().getMessage().contains("does not match any users"));
+    }
+
+    @Test
+    @DisplayName("Failure to register an invalid User")
+    void registerInvalidUser() {
+        UserDTO invalidUser = invalidUserDTO();
+        ResponseEntity<ErrorDTO> response = this.restTemplate.postForEntity(url("/users"), httpEntity(invalidUser), ErrorDTO.class);
+
+        ErrorDTO error = response.getBody();
+
+        assertNotNull(error);
+        assertEquals(HttpStatus.BAD_REQUEST.value(), response.getBody().getHttpStatus());
+
+        assertFieldValidation(error, "username", "birthDate", "country", "phoneNumber", "gender");
     }
 
     @Test
@@ -94,12 +110,20 @@ class UserControllerIntegrationTest {
         assertSame(HttpStatus.NO_CONTENT, response.getStatusCode());
     }
 
+    private void assertFieldValidation(ErrorDTO error, String ...fields) {
+        assertTrue(error.getInvalidFields().stream().map(ErrorDTO.InvalidFieldDTO::getFieldName).allMatch(List.of(fields)::contains));
+    }
+
     private User user() {
         return new User(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M");
     }
 
     private UserDTO userDTO() {
         return new UserDTO(1, "georges.brassens", LocalDate.of(1921, 10, 22), "FRA", "+33558643158", "M");
+    }
+
+    private UserDTO invalidUserDTO() {
+        return new UserDTO(1, null, LocalDate.of(2058, 10, 22), "F", "+335586rezre43158", "MRE");
     }
 
     private String url(String endPoint) {

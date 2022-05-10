@@ -60,7 +60,7 @@ public class MonitoringAspect {
         if (Objects.nonNull(methodReturnObject)) {
             if (methodReturnObject instanceof Optional) {
                 return extractStringValueFromOptional((Optional<?>) methodReturnObject);
-            }  else if (methodReturnObject instanceof Iterable) {
+            } else if (methodReturnObject instanceof Iterable) {
                 return extractStringValueFromIterable((Iterable<?>) methodReturnObject);
             } else {
                 return methodReturnObject.toString();
